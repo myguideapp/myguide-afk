@@ -1,8 +1,0 @@
-{
-  "name": "myguide-afk-app",
-  "dependencies": {
-    "next": "latest",
-    "react": "latest",
-    "firebase": "latest"
-  }
-}
