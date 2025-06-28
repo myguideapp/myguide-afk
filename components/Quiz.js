@@ -1,62 +1,45 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { quizData } from './quizData';
+import QuestionCard from './QuestionCard';
+import TopicSelector from './TopicSelector';
 
 export default function Quiz() {
-  const [topic, setTopic] = useState(Object.keys(quizData)[0]);
-  const [current, setCurrent] = useState(0);
-  const [selected, setSelected] = useState(null);
-  const [score, setScore] = useState(0);
-  const [showScore, setShowScore] = useState(false);
-  const [review, setReview] = useState([]);
+  const topics = Object.keys(quizData);
+  const [selectedTopic, setSelectedTopic] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  const questions = quizData[topic];
+  const questions = selectedTopic ? quizData[selectedTopic] : [];
 
-  const handleAnswer = () => {
-    if (selected === questions[current].answer) {
-      setScore(score + 1);
-    } else {
-      setReview([...review, current]);
-    }
-    const next = current + 1;
-    if (next < questions.length) {
-      setCurrent(next);
-      setSelected(null);
-    } else {
-      setShowScore(true);
-    }
+  const handleNext = () => {
+    setCurrentIndex((prev) => Math.min(prev + 1, questions.length - 1));
+  };
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => Math.max(prev - 1, 0));
   };
 
   return (
     <div>
-      <h3>Select Topic:</h3>
-      <select value={topic} onChange={e => { setTopic(e.target.value); setCurrent(0); setScore(0); setSelected(null); setShowScore(false); setReview([]); }}>
-        {Object.keys(quizData).map(t => <option key={t} value={t}>{t}</option>)}
-      </select>
+      <TopicSelector 
+        topics={topics} 
+        selectedTopic={selectedTopic} 
+        onSelectTopic={(topic) => {
+          setSelectedTopic(topic);
+          setCurrentIndex(0);
+        }} 
+      />
 
-      {showScore ? (
-        <div>
-          <h2>Score: {score}/{questions.length}</h2>
-          <h3>Review:</h3>
-          <ul>{review.map(i => <li key={i}>{questions[i].question}</li>)}</ul>
-        </div>
-      ) : (
-        <div>
-          <h2>{questions[current].question}</h2>
-          {questions[current].options.map((opt, i) => (
-            <div key={i}>
-              <label>
-                <input
-                  type="radio"
-                  name="option"
-                  checked={selected === i}
-                  onChange={() => setSelected(i)}
-                />
-                {opt}
-              </label>
-            </div>
-          ))}
-          <button onClick={handleAnswer} disabled={selected === null}>Next</button>
-        </div>
+      {selectedTopic && questions.length > 0 && (
+        <>
+          <QuestionCard data={questions[currentIndex]} />
+          <div>
+            <button onClick={handlePrev} disabled={currentIndex === 0}>Previous</button>
+            <button onClick={handleNext} disabled={currentIndex === questions.length - 1}>Next</button>
+          </div>
+          <p>
+            Question {currentIndex + 1} of {questions.length}
+          </p>
+        </>
       )}
     </div>
   );
